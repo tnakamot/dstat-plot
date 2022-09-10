@@ -15,13 +15,16 @@ plt.style.use(os.path.join(os.path.dirname(__file__), 'mplstyle'))
 def system_timezone_info():
     return datetime.now(timezone.utc).astimezone().tzinfo
 
-def plot(t, data_frame, column_name, args):
+def plot(t, data_frame, column_name, tz, args):
     fig = plt.figure(figsize = (args.width, args.height), dpi = args.dpi)
     ax = fig.add_subplot(1, 1, 1)
     ax.plot(t, data_frame[column_name])
     ax.set_xlabel(f'Date & Time ({t[0].tzinfo})')
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S'))
     ax.set_ylabel(column_name)
+
+    datetime_formatter = mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S')
+    datetime_formatter.set_tzinfo(tz)
+    ax.xaxis.set_major_formatter(datetime_formatter)
 
     if column_name.startswith('cpu'):
         ax.set_ylim(0, 100)
@@ -125,7 +128,7 @@ def main():
         if column_name == 'system time' or column_name == 'epoch':
             continue
 
-        fig = plot(t, data_frame, column_name, args)
+        fig = plot(t, data_frame, column_name, tz, args)
         
         output_filename = '.'.join((to_filename_base(column_name), args.image_format))
         output_path = output_dir / output_filename
