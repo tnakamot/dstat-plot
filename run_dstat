@@ -1,0 +1,31 @@
+#!/bin/bash
+
+OUTPUT_FILE=/tmp/dstat_$(date +%Y_%m_%d_%H_%M_%S).log
+
+if [ 0 -eq $UID ]; then
+    PID_FILE=/var/run/dstat.pid
+else
+    PID_FILE=/var/run/user/$UID/dstat.pid
+fi
+
+echo $PID_FILE
+
+if [ "$1" = "start" ]; then
+    start-stop-daemon --background --make-pidfile --pidfile ${PID_FILE} --start --exec /usr/bin/dstat -- --time --epoch --all --mem -C 0,1,2,3,total --output ${OUTPUT_FILE}
+    if [ $? -eq 0 ]; then
+	echo "Started dstat (pid: $(cat ${PID_FILE}))"
+	echo "PID file is in ${PID_FILE}"
+	echo "dstat output is in ${OUTPUT_FILE}"
+    else
+	echo "Failed to launch dstat."
+    fi
+elif [ "$1" = "stop" ]; then
+    echo "Reading PID file: ${PID_FILE}."
+    PID=$(cat ${PID_FILE})
+    start-stop-daemon --remove-pidfile --pidfile ${PID_FILE} --stop
+    if [ $? -eq 0 ]; then
+	echo "Stopped dstat (pid: ${PID})"
+    else
+	echo "Failed to stop dstat."
+    fi
+fi
