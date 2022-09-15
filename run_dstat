@@ -17,7 +17,7 @@ N_CORES=$(nproc --all)
 C_ARG=$(seq 0 $(expr ${N_CORES} - 1) | xargs | tr ' ' ',')
 
 if [ "$1" = "start" ]; then
-    start-stop-daemon --background --make-pidfile --pidfile ${PID_FILE} --start --exec /usr/bin/dstat -- --time --epoch --all --mem -C ${C_ARG},total -N ${NET_IFACES} --output ${OUTPUT_FILE}
+    start-stop-daemon --background --make-pidfile --pidfile ${PID_FILE} --start --exec /usr/bin/dstat -- --time --epoch --all --mem -C ${C_ARG},total -N ${NET_IFACES} --thermal --output ${OUTPUT_FILE}
     if [ $? -eq 0 ]; then
 	echo "Started dstat (pid: $(cat ${PID_FILE}))"
 	echo "PID file is in ${PID_FILE}"
