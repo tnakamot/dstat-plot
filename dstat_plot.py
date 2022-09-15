@@ -62,10 +62,10 @@ def cpu_usage_plot(t, data_frame, cpu_id, tz, args):
 
     if cpu_id == 'total':
         column_name_prefix = 'total cpu usage:'
-        title = 'CPU Total [%]'
+        title = 'CPU Total'
     else:
         column_name_prefix = f'cpu{cpu_id} usage:'
-        title = f'CPU #{cpu_id} [%]'
+        title = f'CPU #{cpu_id}'
 
     label_sets = [ ('usr', 'User'),
                    ('sys', 'System'),
@@ -83,10 +83,11 @@ def cpu_usage_plot(t, data_frame, cpu_id, tz, args):
                  data_frame[column_names[3]],
                  data_frame[column_names[4]],
                  labels = long_labels)
+    ax.set_title(title)
     ax.set_xlabel(f'Date & Time ({t[0].tzinfo})')
-    ax.set_ylabel(title)
     ax.set_ylim(0, 100)
     ax.set_yticks((0, 20, 40, 60, 80, 100))
+    ax.set_yticklabels(('0 %', '20 %', '40 %', '60 %', '80 %', '100 %'))
 
     datetime_formatter = mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S')
     datetime_formatter.set_tzinfo(tz)
