@@ -2,6 +2,10 @@
 
 OUTPUT_FILE=/tmp/dstat_$(date +%Y_%m_%d_%H_%M_%S).log
 
+# List all network interfaces
+NET_IFACES=$(ip -o link show | awk -F': ' '{print $2}' | xargs | tr ' ' ',')
+
+# Determine the location of PID file
 if [ 0 -eq $UID ]; then
     PID_FILE=/var/run/dstat.pid
 else
@@ -11,7 +15,7 @@ fi
 echo $PID_FILE
 
 if [ "$1" = "start" ]; then
-    start-stop-daemon --background --make-pidfile --pidfile ${PID_FILE} --start --exec /usr/bin/dstat -- --time --epoch --all --mem -C 0,1,2,3,total --output ${OUTPUT_FILE}
+    start-stop-daemon --background --make-pidfile --pidfile ${PID_FILE} --start --exec /usr/bin/dstat -- --time --epoch --all --mem -C 0,1,2,3,total --net -N ${NET_IFACES} --output ${OUTPUT_FILE}
     if [ $? -eq 0 ]; then
 	echo "Started dstat (pid: $(cat ${PID_FILE}))"
 	echo "PID file is in ${PID_FILE}"
