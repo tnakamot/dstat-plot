@@ -25,6 +25,7 @@ def plot(t, data_frame, column_name, tz, args):
     datetime_formatter = mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S')
     datetime_formatter.set_tzinfo(tz)
     ax.xaxis.set_major_formatter(datetime_formatter)
+    ax.set_xlim(t[0], t[-1])
 
     if column_name.startswith('cpu'):
         ax.set_ylim(0, 100)
@@ -67,6 +68,7 @@ def cpu_usage_plot(t, data_frame, cpu_id, tz, args):
     datetime_formatter = mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S')
     datetime_formatter.set_tzinfo(tz)
     ax.xaxis.set_major_formatter(datetime_formatter)
+    ax.set_xlim(t[0], t[-1])
 
     ax.legend()
     
