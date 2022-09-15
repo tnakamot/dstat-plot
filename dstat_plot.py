@@ -4,6 +4,7 @@ import argparse
 from datetime import datetime, timezone
 import os
 from pathlib import Path
+import re
 import sys
 
 import matplotlib.pyplot as plt
@@ -18,15 +19,23 @@ def system_timezone_info():
 def plot(t, data_frame, column_name, tz, args):
     fig = plt.figure(figsize = (args.width, args.height), dpi = args.dpi)
     ax = fig.add_subplot(1, 1, 1)
-    ax.plot(t, data_frame[column_name])
-    ax.set_xlabel(f'Date & Time ({t[0].tzinfo})')
-    ax.set_ylabel(column_name)
+
+    thermal_match_result = re.match(r'thermal tz([0-9]+)', column_name)
+
+    if thermal_match_result:
+        ax.plot(t, data_frame[column_name] * 1e-3)
+        ax.set_ylabel('Temperature [$^\circ$C]')
+        ax.set_title(f'Thermal Zone {thermal_match_result.group(1)}')
+    else:
+        ax.plot(t, data_frame[column_name])
+        ax.set_ylabel(column_name)
 
     datetime_formatter = mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S')
     datetime_formatter.set_tzinfo(tz)
     ax.xaxis.set_major_formatter(datetime_formatter)
     ax.set_xlim(t[0], t[-1])
-
+    ax.set_xlabel(f'Date & Time ({t[0].tzinfo})')
+    
     return fig
 
 def is_column_for_cpu_usage(column_name):
@@ -233,7 +242,6 @@ def main():
                 print(f'No data before {end_time}.')
                 exit(1)
 
-        print(start_i, end_i)
         t = t[start_i:end_i]
         data_frame = data_frame[start_i:end_i]
     else:
