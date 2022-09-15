@@ -33,16 +33,28 @@ def plot(t, data_frame, column_name, tz, args):
     
     return fig
 
+def has_columns_for_cpu_usage_plot(data_frame, cpu_id):
+    columns = data_frame.columns
+
+    if cpu_id == 'total':
+        prefix = 'total cpu usage:'
+    else:
+        prefix = f'cpu{cpu_id} usage:'
+
+    required_suffixes = ['usr', 'sys', 'idl', 'wai', 'stl']
+    required_columns  = [f'{prefix}{suffix}' for suffix in required_suffixes]
+    return all([required_column in columns for required_column in required_columns])
+
 def cpu_usage_plot(t, data_frame, cpu_id, tz, args):
     fig = plt.figure(figsize = (args.width, args.height), dpi = args.dpi)
     ax = fig.add_subplot(1, 1, 1)
 
     if cpu_id == 'total':
         column_name_prefix = 'total cpu usage:'
-        title = 'CPU Total'
+        title = 'CPU Total [%]'
     else:
         column_name_prefix = f'cpu{cpu_id} usage:'
-        title = 'CPU #{cpu_id}'
+        title = f'CPU #{cpu_id} [%]'
 
     label_sets = [ ('usr', 'User'),
                    ('sys', 'System'),
@@ -181,12 +193,22 @@ def main():
         if not args.show_plot:
             plt.close(fig)
 
-    fig = cpu_usage_plot(t, data_frame, 'total', tz, args)
-    output_filename = '.'.join(('total_cpu_usage', args.image_format))
-    output_path = output_dir / output_filename
-    output_dir.mkdir(parents = True, exist_ok = True)
-    fig.savefig(output_path)
-    print(f'Generated a plot as {output_path}')
+    cpu_ids = ['total'] + list(range(128))
+    for cpu_id in cpu_ids:
+        if not has_columns_for_cpu_usage_plot(data_frame, cpu_id):
+            continue
+        
+        fig = cpu_usage_plot(t, data_frame, cpu_id, tz, args)
+        if cpu_id == 'total':
+            filename_base = 'total_cpu_usage'
+        else:
+            filename_base = f'cpu{cpu_id}_usage'
+            
+        output_filename = '.'.join((filename_base, args.image_format))
+        output_path = output_dir / output_filename
+        output_dir.mkdir(parents = True, exist_ok = True)
+        fig.savefig(output_path)
+        print(f'Generated a plot as {output_path}')
 
     if args.show_plot:
         plt.show()
