@@ -27,11 +27,22 @@ def plot(t, data_frame, column_name, tz, args):
     ax.xaxis.set_major_formatter(datetime_formatter)
     ax.set_xlim(t[0], t[-1])
 
-    if column_name.startswith('cpu'):
-        ax.set_ylim(0, 100)
-        ax.set_yticks((0, 20, 40, 60, 80, 100))
-    
     return fig
+
+def is_column_for_cpu_usage(column_name):
+    cpu_ids = ['total'] + list(range(128))
+    suffixes = ['usr', 'sys', 'idl', 'wai', 'stl']
+
+    for cpu_id in cpu_ids:
+        if cpu_id == 'total':
+            prefix = 'total cpu usage:'
+        else:
+            prefix = f'cpu{cpu_id} usage:'
+
+        for suffix in suffixes:
+            if column_name == f'{prefix}{suffix}':
+                return True
+    return False
 
 def has_columns_for_cpu_usage_plot(data_frame, cpu_id):
     columns = data_frame.columns
@@ -180,6 +191,9 @@ def main():
 
     for column_name in data_frame.columns:
         if column_name == 'system time' or column_name == 'epoch':
+            continue
+
+        if is_column_for_cpu_usage(column_name):
             continue
 
         fig = plot(t, data_frame, column_name, tz, args)
