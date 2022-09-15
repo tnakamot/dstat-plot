@@ -32,6 +32,46 @@ def plot(t, data_frame, column_name, tz, args):
     
     return fig
 
+def cpu_usage_plot(t, data_frame, cpu_id, tz, args):
+    fig = plt.figure(figsize = (args.width, args.height), dpi = args.dpi)
+    ax = fig.add_subplot(1, 1, 1)
+
+    if cpu_id == 'total':
+        column_name_prefix = 'total cpu usage:'
+        title = 'CPU Total'
+    else:
+        column_name_prefix = f'cpu{cpu_id} usage:'
+        title = 'CPU #{cpu_id}'
+
+    label_sets = [ ('usr', 'User'),
+                   ('sys', 'System'),
+                   ('stl', 'Steal'),
+                   ('wai', 'IO Wait'),
+                   ('idl', 'Idle') ]
+    short_labels = [short_label for short_label, long_label in label_sets]
+    long_labels  = [long_label  for short_label, long_label in label_sets]
+    column_names = [f'{column_name_prefix}{short_label}' for short_label in short_labels]
+    
+    ax.stackplot(t,
+                 data_frame[column_names[0]],
+                 data_frame[column_names[1]],
+                 data_frame[column_names[2]],
+                 data_frame[column_names[3]],
+                 data_frame[column_names[4]],
+                 labels = long_labels)
+    ax.set_xlabel(f'Date & Time ({t[0].tzinfo})')
+    ax.set_ylabel(title)
+    ax.set_ylim(0, 100)
+    ax.set_yticks((0, 20, 40, 60, 80, 100))
+
+    datetime_formatter = mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S')
+    datetime_formatter.set_tzinfo(tz)
+    ax.xaxis.set_major_formatter(datetime_formatter)
+
+    ax.legend()
+    
+    return fig
+
 def to_filename_base(column_name):
     characters_to_replace = [' ', ':', '/']
     for c in characters_to_replace:
@@ -138,6 +178,13 @@ def main():
 
         if not args.show_plot:
             plt.close(fig)
+
+    fig = cpu_usage_plot(t, data_frame, 'total', tz, args)
+    output_filename = '.'.join(('total_cpu_usage', args.image_format))
+    output_path = output_dir / output_filename
+    output_dir.mkdir(parents = True, exist_ok = True)
+    fig.savefig(output_path)
+    print(f'Generated a plot as {output_path}')
 
     if args.show_plot:
         plt.show()
