@@ -31,4 +31,6 @@ elif [ "$1" = "stop" ]; then
     else
 	echo "Failed to stop dstat."
     fi
+else
+    echo "Specify 'start' or 'stop'."
 fi
