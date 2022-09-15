@@ -9,10 +9,12 @@ else
     PID_FILE=/var/run/user/$UID/dstat.pid
 fi
 
-echo $PID_FILE
+# Acquire the number of cores
+N_CORES=$(nproc --all)
+C_ARG=$(seq 0 $(expr ${N_CORES} - 1) | xargs | tr ' ' ',')
 
 if [ "$1" = "start" ]; then
-    start-stop-daemon --background --make-pidfile --pidfile ${PID_FILE} --start --exec /usr/bin/dstat -- --time --epoch --all --mem -C 0,1,2,3,total --output ${OUTPUT_FILE}
+    start-stop-daemon --background --make-pidfile --pidfile ${PID_FILE} --start --exec /usr/bin/dstat -- --time --epoch --all --mem -C ${C_ARG},total --output ${OUTPUT_FILE}
     if [ $? -eq 0 ]; then
 	echo "Started dstat (pid: $(cat ${PID_FILE}))"
 	echo "PID file is in ${PID_FILE}"
