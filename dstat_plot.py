@@ -33,8 +33,11 @@ def plot(t, data_frame, column_name, tz, args):
     datetime_formatter = mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S')
     datetime_formatter.set_tzinfo(tz)
     ax.xaxis.set_major_formatter(datetime_formatter)
-    ax.set_xlim(t[0], t[-1])
     ax.set_xlabel(f'Date & Time ({t[0].tzinfo})')
+
+    x_min = args.start_time if args.start_time else t[0]
+    x_max = args.end_time if args.end_time else t[-1]
+    ax.set_xlim(x_min, x_max)
     
     return fig
 
@@ -101,7 +104,10 @@ def cpu_usage_plot(t, data_frame, cpu_id, tz, args):
     datetime_formatter = mdates.DateFormatter('%Y-%m-%d\n%H:%M:%S')
     datetime_formatter.set_tzinfo(tz)
     ax.xaxis.set_major_formatter(datetime_formatter)
-    ax.set_xlim(t[0], t[-1])
+
+    x_min = args.start_time if args.start_time else t[0]
+    x_max = args.end_time if args.end_time else t[-1]
+    ax.set_xlim(x_min, x_max)
 
     ax.legend()
     
@@ -217,7 +223,6 @@ def main():
         tz = timezone.utc if args.utc else system_timezone_info()
         t = [datetime.fromtimestamp(epoch, tz) for epoch in data_frame['epoch']]
         
-        # TODO: Filter out the data outside the specified time range.
         start_i = 0
         if args.start_time:
             start_time = args.start_time
